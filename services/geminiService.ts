@@ -2,7 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { LearningLevel, CourseUnit, AIResponse } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || process.env.API_KEY || "" });
 
 export const getAIPedagogyResponse = async (
   level: LearningLevel,
@@ -65,22 +65,33 @@ export const generateLessonSeed = async (level: LearningLevel, unit: CourseUnit)
   If level is SMARTIES: provide a realistic media case scenario involving a conflict.
   If level is WISE: provide a complex, multi-layered legal dilemma with 3 possible strategic directions.`;
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
-    contents: prompt,
-    config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-                title: { type: Type.STRING },
-                content: { type: Type.STRING },
-                metadata: { type: Type.STRING, description: "Analogy for Dummies, Scenario for Smarties, Dilemma for Wise" },
-                options: { type: Type.ARRAY, items: { type: Type.STRING } }
-            }
-        }
-    }
-  });
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: prompt,
+      config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                  title: { type: Type.STRING },
+                  content: { type: Type.STRING },
+                  metadata: { type: Type.STRING, description: "Analogy for Dummies, Scenario for Smarties, Dilemma for Wise" },
+                  options: { type: Type.ARRAY, items: { type: Type.STRING } }
+              }
+          }
+      }
+    });
 
-  return JSON.parse(response.text || "{}");
+    return JSON.parse(response.text || "{}");
+  } catch (error) {
+    console.error("Lesson Generation Error:", error);
+    // Fallback content to prevent getting stuck
+    return {
+      title: `${unit} - Core Concepts`,
+      content: `Let's explore the fundamental principles of ${unit}. In this module, we analyze how legal frameworks adapt to the evolving media landscape.`,
+      metadata: "Think of law as the operating system of society; it needs regular updates to handle new technology.",
+      options: level === LearningLevel.WISE ? ["Strategic Litigation", "Regulatory Compliance", "Ethical Negotiation"] : []
+    };
+  }
 };

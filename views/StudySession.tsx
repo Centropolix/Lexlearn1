@@ -19,9 +19,14 @@ const StudySession: React.FC<StudySessionProps> = ({ unit, level, onComplete, on
 
   useEffect(() => {
     const init = async () => {
-      const data = await generateLessonSeed(level, unit);
-      setLesson(data);
-      setLoading(false);
+      try {
+        const data = await generateLessonSeed(level, unit);
+        setLesson(data);
+      } catch (err) {
+        console.error("Failed to initialize study session:", err);
+      } finally {
+        setLoading(false);
+      }
     };
     init();
   }, [level, unit]);
