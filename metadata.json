@@ -1,0 +1,8 @@
+{
+  "name": "LexMedia: Cognitive Law Mastery",
+  "description": "A premium cognitive performance system for Audiovisual Communication students to master specialized legislation through active recall, Socratic reasoning, and high-stakes simulations.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
