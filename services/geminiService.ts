@@ -2,7 +2,10 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { LearningLevel, CourseUnit, AIResponse } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || process.env.API_KEY || "" });
+const getAI = () => {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || "";
+  return new GoogleGenAI({ apiKey });
+};
 
 export const getAIPedagogyResponse = async (
   level: LearningLevel,
@@ -10,6 +13,7 @@ export const getAIPedagogyResponse = async (
   userInput: string,
   context: string
 ): Promise<AIResponse> => {
+  const ai = getAI();
   const model = level === LearningLevel.WISE ? 'gemini-3.1-pro-preview' : 'gemini-3-flash-preview';
 
   const systemInstructions: Record<LearningLevel, string> = {
@@ -49,7 +53,9 @@ export const getAIPedagogyResponse = async (
       }
     });
 
-    return JSON.parse(response.text || "{}");
+    const text = response.text;
+    if (!text) throw new Error("Empty response from AI");
+    return JSON.parse(text);
   } catch (error) {
     console.error("Gemini Error:", error);
     return { 
@@ -60,6 +66,7 @@ export const getAIPedagogyResponse = async (
 };
 
 export const generateLessonSeed = async (level: LearningLevel, unit: CourseUnit): Promise<any> => {
+  const ai = getAI();
   const prompt = `Generate a level ${level} lesson for the unit "${unit}". 
   If level is DUMMIES: provide a concept name, a brilliant analogy, and a recall question.
   If level is SMARTIES: provide a realistic media case scenario involving a conflict.
@@ -78,12 +85,15 @@ export const generateLessonSeed = async (level: LearningLevel, unit: CourseUnit)
                   content: { type: Type.STRING },
                   metadata: { type: Type.STRING, description: "Analogy for Dummies, Scenario for Smarties, Dilemma for Wise" },
                   options: { type: Type.ARRAY, items: { type: Type.STRING } }
-              }
+              },
+              required: ["title", "content"]
           }
       }
     });
 
-    return JSON.parse(response.text || "{}");
+    const text = response.text;
+    if (!text) throw new Error("Empty response from AI");
+    return JSON.parse(text);
   } catch (error) {
     console.error("Lesson Generation Error:", error);
     // Fallback content to prevent getting stuck

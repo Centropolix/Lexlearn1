@@ -12,23 +12,56 @@ interface StudySessionProps {
 
 const StudySession: React.FC<StudySessionProps> = ({ unit, level, onComplete, onExit }) => {
   const [loading, setLoading] = useState(true);
-  const [lesson, setLesson] = useState<any>(null);
+  const [lesson, setLesson] = useState<any>({
+    title: `${unit} - Initializing...`,
+    content: "Connecting to the legal matrix. Please wait while we synthesize your cognitive scenario.",
+    metadata: "Cognitive sync in progress..."
+  });
   const [userInput, setUserInput] = useState("");
   const [feedback, setFeedback] = useState<AIResponse | null>(null);
-  const [step, setStep] = useState(1);
 
   useEffect(() => {
+    let isMounted = true;
     const init = async () => {
       try {
         const data = await generateLessonSeed(level, unit);
-        setLesson(data);
+        if (isMounted) {
+          setLesson(data);
+          setLoading(false);
+        }
       } catch (err) {
         console.error("Failed to initialize study session:", err);
-      } finally {
-        setLoading(false);
+        if (isMounted) {
+          // Use a hardcoded fallback if everything fails
+          setLesson({
+            title: `${unit} - Core Principles`,
+            content: `Welcome to the study of ${unit}. This module covers the essential legal frameworks and ethical considerations in modern media.`,
+            metadata: "Law is the architecture of our digital interactions."
+          });
+          setLoading(false);
+        }
       }
     };
+    
+    // Add a safety timeout to force loading to false after 8 seconds
+    const timeout = setTimeout(() => {
+      if (isMounted && loading) {
+        console.warn("Lesson generation timed out, using fallback.");
+        setLesson({
+          title: `${unit} - Core Principles (Offline Mode)`,
+          content: `We're currently experiencing high latency in the neural link. Let's proceed with the core principles of ${unit}.`,
+          metadata: "The law remains constant even when the connection flickers."
+        });
+        setLoading(false);
+      }
+    }, 8000);
+
     init();
+    
+    return () => {
+      isMounted = false;
+      clearTimeout(timeout);
+    };
   }, [level, unit]);
 
   const handleSubmit = async () => {
