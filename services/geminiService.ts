@@ -10,7 +10,7 @@ export const getAIPedagogyResponse = async (
   userInput: string,
   context: string
 ): Promise<AIResponse> => {
-  const model = level === LearningLevel.WISE ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview';
+  const model = level === LearningLevel.WISE ? 'gemini-3.1-pro-preview' : 'gemini-3-flash-preview';
 
   const systemInstructions: Record<LearningLevel, string> = {
     [LearningLevel.DUMMIES]: `You are an expert law professor for 15-year-olds. Explain complex legal concepts using ONLY analogies and stories from media (Netflix, YouTubers, etc.). Avoid jargon. Be concise. One thought at a time. After evaluating user input, give a score from 0-100 and a simple encouragement.`,

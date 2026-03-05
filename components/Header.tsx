@@ -4,13 +4,19 @@ import { UserState } from '../types';
 
 interface HeaderProps {
   userState: UserState;
+  onLogoClick?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ userState }) => {
+const Header: React.FC<HeaderProps> = ({ userState, onLogoClick }) => {
   return (
     <header className="fixed top-0 left-0 right-0 h-20 glass z-50 px-8 flex items-center justify-between">
       <div className="flex items-center gap-4">
-        <h1 className="serif text-2xl font-bold tracking-tight text-white">LEX<span className="text-zinc-500 italic">MEDIA</span></h1>
+        <button 
+          onClick={onLogoClick}
+          className="serif text-2xl font-bold tracking-tight text-white hover:opacity-80 transition-opacity cursor-pointer"
+        >
+          LEX<span className="text-zinc-500 italic">MEDIA</span>
+        </button>
         <div className="h-6 w-px bg-zinc-800" />
         <span className="text-xs uppercase tracking-widest text-zinc-400 font-semibold">{userState.badge} RANK</span>
       </div>
